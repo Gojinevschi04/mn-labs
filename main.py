@@ -50,8 +50,8 @@ def print_result(iteration_count: int, result: float, difference: float) -> None
 def interval_halving_method_a(start: float, end: float, approximation: float) -> None:
     iteration_count: int = 1
 
-    while end - start > approximation:
-        middle: float = (start + end) / 2
+    while end - start > 2 * approximation:
+        middle: float = start + (end - start) / 2
         function_start_value: float = get_expression_value_a(start)
         function_middle_value: float = get_expression_value_a(middle)
 
@@ -68,9 +68,9 @@ def interval_halving_method_a(start: float, end: float, approximation: float) ->
 def interval_halving_method_b(start: float, end: float, approximation: float) -> None:
     iteration_count: int = 1
 
-    while end - start > approximation:
+    while end - start > 2 * approximation:
 
-        middle: float = (start + end) / 2
+        middle: float = start + (end - start) / 2
         function_start_value: float = get_expression_value_b(start)
         function_middle_value: float = get_expression_value_b(middle)
 
@@ -103,7 +103,7 @@ def method_of_successive_approximations_b(start: float, end: float, approximatio
     iteration_count: int = 0
     alpha: float = abs(get_expression_fi_derivative_value_b(end))
 
-    while abs(start - end) > approximation:
+    while alpha / (1 - alpha) * abs(start - end) > approximation:
         end = get_expression_fi_value_b(start)
         print_result(iteration_count, end, abs(start - end))
 
@@ -220,26 +220,26 @@ end_b: float = 1
 
 approximation_value: float = 0.0000001
 
-print("Metoda injumatatirii intervalului a:")
+print("\n\tMetoda injumatatirii intervalului a:")
 interval_halving_method_a(start_a_1, end_a_1, approximation_value)
 
-print("Metoda injumatatirii intervalului b:")
+print("\n\tMetoda injumatatirii intervalului b:")
 interval_halving_method_b(start_b, end_b, approximation_value)
 
-print("Metoda aproximatiilor succesive a:")
+print("\n\tMetoda aproximatiilor succesive a:")
 method_of_successive_approximations_a(start_a_2, end_a_2, approximation_value)
 
-print("Metoda aproximatiilor succesive b:")
+print("\n\tMetoda aproximatiilor succesive b:")
 method_of_successive_approximations_b(start_b, end_b, approximation_value)
 
-print("Metoda tangentelor a:")
+print("\n\tMetoda tangentelor a:")
 tangent_method_a(start_a_1, approximation_value)
 
-print("Metoda tangentelor b:")
+print("\n\tMetoda tangentelor b:")
 tangent_method_b(start_b, approximation_value)
 
-print("Metoda secantelor a:")
+print("\n\tMetoda secantelor a:")
 secant_method_a(start_a_2, end_a_2, approximation_value)
 
-print("Metoda secantelor b:")
+print("\n\tMetoda secantelor b:")
 secant_method_b(start_b, end_b, approximation_value)
