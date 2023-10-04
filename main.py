@@ -6,7 +6,7 @@ def get_expression_value_a(value: float) -> float:
 
 
 def get_expression_value_b(value: float) -> float:
-    return value**3 + 9 * value - 3
+    return value ** 3 + 9 * value - 3
 
 
 def get_expression_derivative_value_a(value: float) -> float:
@@ -14,7 +14,7 @@ def get_expression_derivative_value_a(value: float) -> float:
 
 
 def get_expression_derivative_value_b(value: float) -> float:
-    return 3 * value**2 + 9
+    return 3 * value ** 2 + 9
 
 
 def get_expression_second_derivative_value_a(value: float) -> float:
@@ -30,7 +30,7 @@ def get_expression_fi_derivative_value_a(value: float) -> float:
 
 
 def get_expression_fi_derivative_value_b(value: float) -> float:
-    return -6 * value / (value**2 + 9) ** 2
+    return -6 * value / (value ** 2 + 9) ** 2
 
 
 def get_expression_fi_value_a(value: float) -> float:
@@ -38,13 +38,13 @@ def get_expression_fi_value_a(value: float) -> float:
 
 
 def get_expression_fi_value_b(value: float) -> float:
-    return 3 / (value**2 + 9)
+    return 3 / (value ** 2 + 9)
 
 
-def print_result(iteration_count: int, result: float, difference: float) -> None:
+def print_result(iteration_count: int, result: float, function_value: float) -> None:
     print(f"\nIteratia: {iteration_count}")
     print(f"Rezultatul: {result}")
-    print(f"Diferenta: {difference}")
+    print(f"Valoarea functiei: {function_value}\n")
 
 
 def interval_halving_method_a(start: float, end: float, approximation: float) -> None:
@@ -60,8 +60,9 @@ def interval_halving_method_a(start: float, end: float, approximation: float) ->
         else:
             start = middle
 
-        print(f"Iteratia: {iteration_count}")
-        print(f"x = ( {start} , {end} )")
+        print(f"\nIteratia: {iteration_count}")
+        print(f"x = {middle}")
+        print(f"Valoarea functiei = {function_middle_value}")
         iteration_count += 1
 
 
@@ -78,93 +79,109 @@ def interval_halving_method_b(start: float, end: float, approximation: float) ->
         else:
             start = middle
 
-        print(f"Iteratia: {iteration_count}")
-        print(f"x = ( {start} , {end} )")
+        print(f"\nIteratia: {iteration_count}")
+        print(f"x = {middle}")
+        print(f"Valoarea functiei = {function_middle_value}")
         iteration_count += 1
 
 
 def method_of_successive_approximations_a(
-    start: float, end: float, approximation: float
+        start: float, end: float, approximation: float
 ) -> None:
-    iteration_count: int = 0
+    iteration_count: int = 1
     alpha: float = abs(get_expression_fi_derivative_value_a(start))
 
     while alpha / (1 - alpha) * abs(start - end) > approximation:
         end = get_expression_fi_value_a(start)
-        print_result(iteration_count, end, abs(start - end))
+        print_result(iteration_count, end, get_expression_value_a(end))
 
         iteration_count += 1
         start = get_expression_fi_value_a(end)
 
-        print_result(iteration_count, start, abs(start - end))
+        print_result(iteration_count, start, get_expression_value_a(start))
         iteration_count += 1
 
 
 def method_of_successive_approximations_b(
-    start: float, end: float, approximation: float
+        start: float, end: float, approximation: float
 ) -> None:
-    iteration_count: int = 0
+    iteration_count: int = 1
     alpha: float = abs(get_expression_fi_derivative_value_b(end))
 
     while alpha / (1 - alpha) * abs(start - end) > approximation:
         end = get_expression_fi_value_b(start)
-        print_result(iteration_count, end, abs(start - end))
+        print_result(iteration_count, end, get_expression_value_b(end))
 
         iteration_count += 1
         start = get_expression_fi_value_b(end)
 
-        print_result(iteration_count, start, abs(start - end))
+        print_result(iteration_count, start, get_expression_value_b(start))
         iteration_count += 1
 
 
 def tangent_method_a(initial_value_x: float, approximation: float) -> None:
     iteration_count: int = 0
+    min_value: float = abs(get_expression_derivative_value_a(-pi))
+    max_value: float = abs(get_expression_second_derivative_value_a(initial_value_x))
 
     current_x: float = initial_value_x - get_expression_value_a(
         initial_value_x
     ) / get_expression_derivative_value_a(initial_value_x)
-    print_result(iteration_count + 1, current_x, abs(current_x - initial_value_x))
+    print_result(iteration_count + 1, current_x, get_expression_value_a(current_x))
 
-    while abs(initial_value_x - current_x) > approximation:
+    while (max_value / (2 * min_value)) * abs(
+            current_x - initial_value_x
+    ) > approximation:
         initial_value_x = current_x - get_expression_value_a(
             current_x
         ) / get_expression_derivative_value_a(current_x)
         iteration_count += 1
 
         print_result(
-            iteration_count + 1, initial_value_x, abs(current_x - initial_value_x)
+            iteration_count + 1,
+            initial_value_x,
+            get_expression_value_a(initial_value_x),
         )
         current_x = initial_value_x - get_expression_value_a(
             initial_value_x
         ) / get_expression_derivative_value_a(initial_value_x)
         iteration_count += 1
 
-        print_result(iteration_count + 1, current_x, abs(current_x - initial_value_x))
+        print_result(
+            iteration_count + 1,
+            current_x,
+            get_expression_value_a(current_x),
+        )
 
 
 def tangent_method_b(initial_value_x: float, approximation: float) -> None:
     iteration_count: int = 0
-
+    min_value: float = abs(get_expression_derivative_value_b(initial_value_x))
+    max_value: float = abs(get_expression_second_derivative_value_b(1))
     current_x: float = initial_value_x - get_expression_value_b(
         initial_value_x
     ) / get_expression_derivative_value_b(initial_value_x)
-    print_result(iteration_count + 1, current_x, abs(current_x - initial_value_x))
+    print_result(iteration_count + 1, current_x, get_expression_value_b(current_x))
 
-    while abs(initial_value_x - current_x) > approximation:
+    while (max_value / (2 * min_value)) * abs(
+            current_x - initial_value_x
+    ) > approximation:
         initial_value_x = current_x - get_expression_value_b(
             current_x
         ) / get_expression_derivative_value_b(current_x)
         iteration_count += 1
 
         print_result(
-            iteration_count + 1, initial_value_x, abs(current_x - initial_value_x)
+            iteration_count + 1,
+            initial_value_x,
+            get_expression_value_b(initial_value_x),
         )
         current_x = initial_value_x - get_expression_value_b(
             initial_value_x
         ) / get_expression_derivative_value_b(initial_value_x)
         iteration_count += 1
 
-        print_result(iteration_count + 1, current_x, abs(current_x - initial_value_x))
+        print_result(iteration_count + 1, current_x, get_expression_value_b(current_x))
 
 
 def secant_method_a(start: float, end: float, approximation: float) -> None:
@@ -172,11 +189,11 @@ def secant_method_a(start: float, end: float, approximation: float) -> None:
     min_value: float = abs(get_expression_derivative_value_a(end))
     max_value: float = abs(get_expression_second_derivative_value_a(start))
     x_value: float = start - get_expression_value_a(start) * (end - start) / (
-        get_expression_value_a(end) - get_expression_value_a(start)
+            get_expression_value_a(end) - get_expression_value_a(start)
     )
 
     while (max_value / (2 * min_value)) * abs(start - x_value) * abs(
-        x_value - end
+            x_value - end
     ) > approximation:
         function_start_value: float = get_expression_value_a(start)
         function_end_value: float = get_expression_value_a(end)
@@ -186,10 +203,10 @@ def secant_method_a(start: float, end: float, approximation: float) -> None:
         else:
             start = x_value
 
-        print_result(iteration_count + 1, x_value, abs(start - end))
+        print_result(iteration_count + 1, x_value, get_expression_value_a(x_value))
 
         x_value = start - get_expression_value_a(start) * (end - start) / (
-            get_expression_value_a(end) - get_expression_value_a(start)
+                get_expression_value_a(end) - get_expression_value_a(start)
         )
         iteration_count += 1
 
@@ -199,11 +216,11 @@ def secant_method_b(start: float, end: float, approximation: float) -> None:
     min_value: float = abs(get_expression_derivative_value_b(start))
     max_value: float = abs(get_expression_second_derivative_value_b(end))
     x_value: float = start - get_expression_value_b(start) * (end - start) / (
-        get_expression_value_b(end) - get_expression_value_b(start)
+            get_expression_value_b(end) - get_expression_value_b(start)
     )
 
     while (max_value / (2 * min_value)) * abs(start - x_value) * abs(
-        x_value - end
+            x_value - end
     ) > approximation:
         function_start_value: float = get_expression_value_b(start)
         function_end_value: float = get_expression_value_b(end)
@@ -213,10 +230,10 @@ def secant_method_b(start: float, end: float, approximation: float) -> None:
         else:
             start = x_value
 
-        print_result(iteration_count + 1, x_value, abs(start - end))
+        print_result(iteration_count + 1, x_value, get_expression_value_b(x_value))
 
         x_value = start - get_expression_value_b(start) * (end - start) / (
-            get_expression_value_b(end) - get_expression_value_b(start)
+                get_expression_value_b(end) - get_expression_value_b(start)
         )
 
         iteration_count += 1
@@ -254,7 +271,7 @@ print("\n\tMetoda aproximatiilor succesive b:")
 method_of_successive_approximations_b(start_b, end_b, approximation_value)
 
 print("\n\tMetoda tangentelor a:")
-tangent_method_a(start_a_1, approximation_value)
+tangent_method_a(start_a_2, approximation_value)
 
 print("\n\tMetoda tangentelor b:")
 tangent_method_b(start_b, approximation_value)
