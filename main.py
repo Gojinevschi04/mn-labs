@@ -1,266 +1,209 @@
-from math import sin, cos, exp, pi
+from math import sqrt
+
+matrix = list[list[float]]
+vector = list[float]
 
 
-def get_expression_value_a(value: float) -> float:
-    return exp(-value) * sin(value) + 1
+def get_condition_value(vector_1: vector, vector_0: vector, q_value: float, approximation_error: float) -> bool:
+    count: int = len(vector_1)
+    current_vector: vector = [abs(vector_1[index] - vector_0[index]) for index in range(count)]
+    infinity_matrix_norm: float = max(current_vector)
+
+    return q_value / (1 - q_value) * infinity_matrix_norm > approximation_error
 
 
-def get_expression_value_b(value: float) -> float:
-    return value**3 + 9 * value - 3
+def print_result(iteration_count: int, result_vector: vector) -> None:
+    count: int = len(result_vector)
+    print(f"Numarul de iteratii: {iteration_count}")
+
+    for index in range(count):
+        print(f"x{index + 1} = {result_vector[index]}")
 
 
-def get_expression_derivative_value_a(value: float) -> float:
-    return exp(-value) * (cos(value) - sin(value))
+def transforma1(pp, matrice: matrix):
+    for i in range(len(matrice[0])):
+
+        if matrice[pp][pp] != 1:
+            q00 = matrice[pp][pp]
+
+            for j in range(len(matrice[0])):
+                matrice[pp][j] = matrice[pp][j] / q00
 
 
-def get_expression_derivative_value_b(value: float) -> float:
-    return 3 * value**2 + 9
+def transforma0(r, c, matrice: matrix):
+    for i in range(len(matrice[0])):
+        if matrice[r][c] != 0:
+            q04 = matrice[r][c]
+
+            for j in range(len(matrice[0])):
+                print('r = ', r, 'j = ', j, 'c = ', c)
+                print('matrice[r][j] = ', matrice[r][j])
+                print('matrice[c][j] = ', matrice[c][j])
+                matrice[r][j] = matrice[r][j] - ((q04) * matrice[c][j])
 
 
-def get_expression_second_derivative_value_a(value: float) -> float:
-    return -2 * exp(-value) * cos(value)
+def gauss_method(system_matrix: matrix):
+    local_matrix: matrix = system_matrix.copy()
+    count = len(local_matrix)
+
+    for i in range(count):
+        transforma1(i, local_matrix)
+
+        for j in range(count):
+            if j > i:
+                transforma0(j, i, local_matrix)
+
+    x = list(range(count))
+
+    for i in range(count, 0, -1):
+        x[i - 1] = local_matrix[i - 1][4]
+
+        for j in range(count):
+            if j != (i - 1):
+                x[i - 1] -= x[j] * local_matrix[i - 1][j]
+
+    for i in range(count):
+        print(f"x{i + 1} = {x[i]}")
+    print("\n", end="")
 
 
-def get_expression_second_derivative_value_b(value: float) -> float:
-    return 6 * value
+def cholesky_method(system_matrix: matrix):
+    local_matrix: matrix = system_matrix.copy()
+    count: int = len(local_matrix)
+
+    matrix_l: matrix = [[0] * count] * count
+
+    for i in range(count):
+
+        for j in range(i + 1):
+            local_sum: float = 0
+
+            if j == i:
+
+                for k in range(j):
+                    local_sum += matrix_l[j][k] ** 2
+
+                matrix_l[j][j] = sqrt(local_matrix[j][j] - local_sum)
+
+            else:
+
+                for k in range(j):
+                    local_sum += (matrix_l[i][k] * matrix_l[j][k])
+
+                if (matrix_l[j][j] > 0):
+                    matrix_l[i][j] = (local_matrix[i][j] - local_sum) / matrix_l[j][j]
+
+    y = []
+
+    for i in range(len(local_matrix)):
+        y.append(vector_b[i] / matrix_l[i][i])
+
+    x = []
+
+    for i in range(len(local_matrix)):
+        x.append(y[i] / matrix_l[i][i])
+
+    for i in range(len(x)):
+        print(f"x{i + 1} = {x[i]}")
+    print("\n", end="")
 
 
-def get_expression_fi_derivative_value_a(value: float) -> float:
-    return exp(value) + cos(value) + 1
-
-
-def get_expression_fi_derivative_value_b(value: float) -> float:
-    return -6 * value / (value**2 + 9) ** 2
-
-
-def get_expression_fi_value_a(value: float) -> float:
-    return exp(value) + sin(value) + value
-
-
-def get_expression_fi_value_b(value: float) -> float:
-    return 3 / (value**2 + 9)
-
-
-def print_result(iteration_count: int, result: float, difference: float) -> None:
-    print(f"\nIteratia: {iteration_count}")
-    print(f"Rezultatul: {result}")
-    print(f"Diferenta: {difference}")
-
-
-def interval_halving_method_a(start: float, end: float, approximation: float) -> None:
-    iteration_count: int = 1
-
-    while end - start > 2 * approximation:
-        middle: float = start + (end - start) / 2
-        function_start_value: float = get_expression_value_a(start)
-        function_middle_value: float = get_expression_value_a(middle)
-
-        if function_start_value * function_middle_value < 0:
-            end = middle
-        else:
-            start = middle
-
-        print(f"Iteratia: {iteration_count}")
-        print(f"x = ( {start} , {end} )")
-        iteration_count += 1
-
-
-def interval_halving_method_b(start: float, end: float, approximation: float) -> None:
-    iteration_count: int = 1
-
-    while end - start > 2 * approximation:
-        middle: float = start + (end - start) / 2
-        function_start_value: float = get_expression_value_b(start)
-        function_middle_value: float = get_expression_value_b(middle)
-
-        if function_start_value * function_middle_value < 0:
-            end = middle
-        else:
-            start = middle
-
-        print(f"Iteratia: {iteration_count}")
-        print(f"x = ( {start} , {end} )")
-        iteration_count += 1
-
-
-def method_of_successive_approximations_a(
-    start: float, end: float, approximation: float
-) -> None:
-    iteration_count: int = 0
-    alpha: float = abs(get_expression_fi_derivative_value_a(start))
-
-    while alpha / (1 - alpha) * abs(start - end) > approximation:
-        end = get_expression_fi_value_a(start)
-        print_result(iteration_count, end, abs(start - end))
-
-        iteration_count += 1
-        start = get_expression_fi_value_a(end)
-
-        print_result(iteration_count, start, abs(start - end))
-        iteration_count += 1
-
-
-def method_of_successive_approximations_b(
-    start: float, end: float, approximation: float
-) -> None:
-    iteration_count: int = 0
-    alpha: float = abs(get_expression_fi_derivative_value_b(end))
-
-    while alpha / (1 - alpha) * abs(start - end) > approximation:
-        end = get_expression_fi_value_b(start)
-        print_result(iteration_count, end, abs(start - end))
-
-        iteration_count += 1
-        start = get_expression_fi_value_b(end)
-
-        print_result(iteration_count, start, abs(start - end))
-        iteration_count += 1
-
-
-def tangent_method_a(initial_value_x: float, approximation: float) -> None:
+def jacobi_method(local_matrix: matrix, local_vector: vector, approximation_error: float):
+    count: int = len(local_matrix)
     iteration_count: int = 0
 
-    current_x: float = initial_value_x - get_expression_value_a(
-        initial_value_x
-    ) / get_expression_derivative_value_a(initial_value_x)
-    print_result(iteration_count + 1, current_x, abs(current_x - initial_value_x))
+    matrix_q: matrix = [[0] * count] * count
+    matrix_q_abs: vector = [0] * count ** 2
 
-    while abs(initial_value_x - current_x) > approximation:
-        initial_value_x = current_x - get_expression_value_a(
-            current_x
-        ) / get_expression_derivative_value_a(current_x)
+    for first_index in range(count):
+        for second_index in range(count):
+            if first_index != second_index:
+                matrix_q[first_index][second_index] = - local_matrix[first_index][second_index] / \
+                                                      local_matrix[first_index][first_index]
+
+            matrix_q_abs.append(abs(matrix_q[first_index][second_index]))
+
+    q_value: float = max(matrix_q_abs)
+
+    vector_c: vector = [local_vector[index] / local_matrix[index][index] for index in range(count)]
+
+    initial_vector_x: vector = vector_c
+    current_vector_x: vector = initial_vector_x.copy()
+
+    condition: bool = True
+
+    while (condition):
         iteration_count += 1
+        current_vector_x = initial_vector_x.copy()
 
-        print_result(
-            iteration_count + 1, initial_value_x, abs(current_x - initial_value_x)
-        )
-        current_x = initial_value_x - get_expression_value_a(
-            initial_value_x
-        ) / get_expression_derivative_value_a(initial_value_x)
-        iteration_count += 1
+        for index in range(count):
+            for second_index in range(count):
+                current_vector_x[index] = current_vector_x[index] + matrix_q[first_index][second_index] * \
+                                          initial_vector_x[second_index]
 
-        print_result(iteration_count + 1, current_x, abs(current_x - initial_value_x))
+        condition = get_condition_value(current_vector_x, initial_vector_x, q_value, approximation_error)
+        initial_vector_x = current_vector_x.copy()
+
+    print_result(iteration_count, current_vector_x)
 
 
-def tangent_method_b(initial_value_x: float, approximation: float) -> None:
+def gauss_seidel_method(local_matrix: matrix, local_vector: vector, approximation_error: float):
+    count: int = len(local_matrix)
     iteration_count: int = 0
 
-    current_x: float = initial_value_x - get_expression_value_b(
-        initial_value_x
-    ) / get_expression_derivative_value_b(initial_value_x)
-    print_result(iteration_count + 1, current_x, abs(current_x - initial_value_x))
+    matrix_q: matrix = [[0] * count] * count
+    matrix_q_abs: vector = [0] * count ** 2
 
-    while abs(initial_value_x - current_x) > approximation:
-        initial_value_x = current_x - get_expression_value_b(
-            current_x
-        ) / get_expression_derivative_value_b(current_x)
+    for first_index in range(count):
+        for second_index in range(count):
+            if first_index != second_index:
+                matrix_q[first_index][second_index] = - local_matrix[first_index][second_index] / \
+                                                      local_matrix[first_index][first_index]
+
+            matrix_q_abs.append(abs(matrix_q[first_index][second_index]))
+
+    q_value: float = max(matrix_q_abs)
+
+    vector_c: vector = [local_vector[index] / local_matrix[index][index] for index in range(count)]
+
+    initial_vector_x: vector = vector_c
+    current_vector_x: vector = initial_vector_x.copy()
+
+    condition: bool = True
+
+    while (condition):
         iteration_count += 1
+        current_vector_x = initial_vector_x.copy()
 
-        print_result(
-            iteration_count + 1, initial_value_x, abs(current_x - initial_value_x)
-        )
-        current_x = initial_value_x - get_expression_value_b(
-            initial_value_x
-        ) / get_expression_derivative_value_b(initial_value_x)
-        iteration_count += 1
+        for index in range(count):
+            for second_index in range(count):
 
-        print_result(iteration_count + 1, current_x, abs(current_x - initial_value_x))
+                if second_index >= first_index:
+                    current_vector_x[index] = current_vector_x[index] + matrix_q[first_index][second_index] * \
+                                              initial_vector_x[second_index]
+                else:
+                    current_vector_x[index] = current_vector_x[index] + matrix_q[first_index][second_index] * \
+                                              current_vector_x[second_index]
 
+        condition = get_condition_value(current_vector_x, initial_vector_x, q_value, approximation_error)
+        initial_vector_x = current_vector_x.copy()
 
-def secant_method_a(start: float, end: float, approximation: float) -> None:
-    iteration_count: int = 0
-    min_value: float = abs(get_expression_derivative_value_a(end))
-    max_value: float = abs(get_expression_second_derivative_value_a(start))
-    x_value: float = start - get_expression_value_a(start) * (end - start) / (
-        get_expression_value_a(end) - get_expression_value_a(start)
-    )
-
-    while (max_value / (2 * min_value)) * abs(start - x_value) * abs(
-        x_value - end
-    ) > approximation:
-        function_start_value: float = get_expression_value_a(start)
-        function_end_value: float = get_expression_value_a(end)
-
-        if function_start_value * function_end_value < 0:
-            end = x_value
-        else:
-            start = x_value
-
-        print_result(iteration_count + 1, x_value, abs(start - end))
-
-        x_value = start - get_expression_value_a(start) * (end - start) / (
-            get_expression_value_a(end) - get_expression_value_a(start)
-        )
-        iteration_count += 1
+    print_result(iteration_count, current_vector_x)
 
 
-def secant_method_b(start: float, end: float, approximation: float) -> None:
-    iteration_count: int = 0
-    min_value: float = abs(get_expression_derivative_value_b(start))
-    max_value: float = abs(get_expression_second_derivative_value_b(end))
-    x_value: float = start - get_expression_value_b(start) * (end - start) / (
-        get_expression_value_b(end) - get_expression_value_b(start)
-    )
+approximation_error: float = 0.001
 
-    while (max_value / (2 * min_value)) * abs(start - x_value) * abs(
-        x_value - end
-    ) > approximation:
-        function_start_value: float = get_expression_value_b(start)
-        function_end_value: float = get_expression_value_b(end)
+matrix_a: matrix = [[6.1, -1.9, 0.4, 0.2], [-1.9, 14.3, 1.8, 1.4], [0.4, 1.8, 12.7, -0.6], [0.2, 1.4, -0.6, 13.1]]
+vector_b: vector = [7.1, 10.2, -7.2, 8.6]
+matrix_ab: matrix = [[6.1, -1.9, 0.4, 0.2, 7.1], [-1.9, 14.3, 1.8, 1.4, 10.2], [0.4, 1.8, 12.7, -0.6, -7.2],
+                     [0.2, 1.4, -0.6, 13.1, 8.6]]
 
-        if function_start_value * function_end_value < 0:
-            end = x_value
-        else:
-            start = x_value
+# print("Metoda eliminării lui Gauss: ")
+# print("Metoda lui Cholesky: ")
+print(f"Metoda iterativă a lui Jacobi cu eroarea {approximation_error}: ")
+jacobi_method(matrix_a, vector_b, approximation_error)
 
-        print_result(iteration_count + 1, x_value, abs(start - end))
+print(f"Metoda iterativă a lui Gauss-Seidel cu eroarea {approximation_error}: ")
+gauss_seidel_method(matrix_a, vector_b, approximation_error)
 
-        x_value = start - get_expression_value_b(start) * (end - start) / (
-            get_expression_value_b(end) - get_expression_value_b(start)
-        )
-
-        iteration_count += 1
-
-
-# start_a: float = float(input("Introduceti intervalul de calcul:\na = "))
-# end_a: float = float(input("b = "))
 #
-# start_b: float = float(input("Introduceti intervalul de calcul:\na = "))
-# end_b: float = float(input("b = "))
-#
-# approximation_value: float = float(input("Introduceti aproximarea:\nepsilon = "))
-
-start_a_1: float = -pi / 2
-end_a_1: float = 0
-
-start_a_2: float = -5 * pi / 4
-end_a_2: float = -pi
-
-start_b: float = 0
-end_b: float = 1
-
-approximation_value: float = 0.0000001
-
-print("\n\tMetoda injumatatirii intervalului a:")
-interval_halving_method_a(start_a_1, end_a_1, approximation_value)
-
-print("\n\tMetoda injumatatirii intervalului b:")
-interval_halving_method_b(start_b, end_b, approximation_value)
-
-print("\n\tMetoda aproximatiilor succesive a:")
-method_of_successive_approximations_a(start_a_2, end_a_2, approximation_value)
-
-print("\n\tMetoda aproximatiilor succesive b:")
-method_of_successive_approximations_b(start_b, end_b, approximation_value)
-
-print("\n\tMetoda tangentelor a:")
-tangent_method_a(start_a_1, approximation_value)
-
-print("\n\tMetoda tangentelor b:")
-tangent_method_b(start_b, approximation_value)
-
-print("\n\tMetoda secantelor a:")
-secant_method_a(start_a_2, end_a_2, approximation_value)
-
-print("\n\tMetoda secantelor b:")
-secant_method_b(start_b, end_b, approximation_value)
