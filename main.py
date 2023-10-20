@@ -1,209 +1,319 @@
 from math import sqrt
+import decimal
+from decimal import Decimal
 
-matrix = list[list[float]]
-vector = list[float]
+matrix = list[list[Decimal]]
+vector = list[Decimal]
 
 
-def get_condition_value(vector_1: vector, vector_0: vector, q_value: float, approximation_error: float) -> bool:
+def get_condition_value(
+        vector_1: vector, vector_0: vector, q_value: Decimal, approximation_error: Decimal
+) -> bool:
     count: int = len(vector_1)
-    current_vector: vector = [abs(vector_1[index] - vector_0[index]) for index in range(count)]
-    infinity_matrix_norm: float = max(current_vector)
+    current_vector: vector = [
+        Decimal(abs(Decimal(vector_1[index]) - Decimal(vector_0[index])))
+        for index in range(count)
+    ]
+    infinity_matrix_norm: Decimal = Decimal(max(current_vector))
 
     return q_value / (1 - q_value) * infinity_matrix_norm > approximation_error
 
 
 def print_result(iteration_count: int, result_vector: vector) -> None:
     count: int = len(result_vector)
-    print(f"Numarul de iteratii: {iteration_count}")
+    if iteration_count:
+        print(f"Numarul de iteratii: {iteration_count}")
 
     for index in range(count):
         print(f"x{index + 1} = {result_vector[index]}")
 
 
-def transforma1(pp, matrice: matrix):
-    for i in range(len(matrice[0])):
+def find_max_pivot(
+        extended_matrix: matrix, column_index: int, count: int
+) -> tuple[Decimal, int]:
+    max_pivot_value: Decimal = abs(extended_matrix[column_index][column_index])
+    pivot_row: int = column_index
 
-        if matrice[pp][pp] != 1:
-            q00 = matrice[pp][pp]
+    for row_index in range(column_index + 1, count):
+        current_value = abs(extended_matrix[row_index][column_index])
 
-            for j in range(len(matrice[0])):
-                matrice[pp][j] = matrice[pp][j] / q00
+        if current_value > max_pivot_value:
+            max_pivot_value = current_value
+            pivot_row = row_index
 
-
-def transforma0(r, c, matrice: matrix):
-    for i in range(len(matrice[0])):
-        if matrice[r][c] != 0:
-            q04 = matrice[r][c]
-
-            for j in range(len(matrice[0])):
-                print('r = ', r, 'j = ', j, 'c = ', c)
-                print('matrice[r][j] = ', matrice[r][j])
-                print('matrice[c][j] = ', matrice[c][j])
-                matrice[r][j] = matrice[r][j] - ((q04) * matrice[c][j])
+    return max_pivot_value, pivot_row
 
 
-def gauss_method(system_matrix: matrix):
-    local_matrix: matrix = system_matrix.copy()
-    count = len(local_matrix)
-
-    for i in range(count):
-        transforma1(i, local_matrix)
-
-        for j in range(count):
-            if j > i:
-                transforma0(j, i, local_matrix)
-
-    x = list(range(count))
-
-    for i in range(count, 0, -1):
-        x[i - 1] = local_matrix[i - 1][4]
-
-        for j in range(count):
-            if j != (i - 1):
-                x[i - 1] -= x[j] * local_matrix[i - 1][j]
-
-    for i in range(count):
-        print(f"x{i + 1} = {x[i]}")
-    print("\n", end="")
+def normalize_row(row: list[Decimal], divisor: Decimal) -> list[Decimal]:
+    return [Decimal(element / divisor) for element in row]
 
 
-def cholesky_method(system_matrix: matrix):
-    local_matrix: matrix = system_matrix.copy()
-    count: int = len(local_matrix)
+def eliminate_element(
+        target_row: list[Decimal], source_row: list[Decimal], factor: Decimal
+) -> list[Decimal]:
+    return [target - factor * source for target, source in zip(target_row, source_row)]
 
-    matrix_l: matrix = [[0] * count] * count
 
-    for i in range(count):
+def gauss_method(extended_matrix: matrix) -> None:
+    rows_count: int = len(extended_matrix)
+    columns_count: int = rows_count + 1
 
-        for j in range(i + 1):
-            local_sum: float = 0
+    local_matrix = [row.copy() for row in extended_matrix]
 
-            if j == i:
+    for row_index in range(rows_count):
+        divisor: Decimal = Decimal(local_matrix[row_index][row_index])
+        local_matrix[row_index] = normalize_row(local_matrix[row_index], divisor)
 
-                for k in range(j):
-                    local_sum += matrix_l[j][k] ** 2
+        for column_index in range(row_index + 1, rows_count):
+            factor = local_matrix[column_index][row_index]
+            local_matrix[column_index] = eliminate_element(
+                local_matrix[column_index], local_matrix[row_index], factor
+            )
 
-                matrix_l[j][j] = sqrt(local_matrix[j][j] - local_sum)
+    solutions = [extended_matrix[index][rows_count] for index in range(rows_count)]
+
+    for row_index in range(rows_count - 1, -1, -1):
+        solutions[row_index] = local_matrix[row_index][columns_count - 1]
+
+        for column_index in range(row_index + 1, rows_count):
+            solutions[row_index] -= (
+                    local_matrix[row_index][column_index] * solutions[column_index]
+            )
+
+    print_result(0, solutions)
+
+
+def transpose(matrix_l: matrix) -> matrix:
+    rows_number, columns_number = len(matrix_l), len(matrix_l[0])
+
+    transposed_matrix: matrix = [
+        [matrix_l[row_index][column_index] for row_index in range(rows_number)]
+        for column_index in range(columns_number)
+    ]
+
+    return transposed_matrix
+
+
+def cholesky_decomposition(matrix_a: matrix) -> matrix:
+    rows_number: int = len(matrix_a)
+    matrix_l: matrix = [
+        [Decimal(0) for _ in range(rows_number)] for _ in range(rows_number)
+    ]
+
+    for row_index in range(rows_number):
+        for column_index in range(row_index + 1):
+            if row_index == column_index:
+                local_sum: Decimal = Decimal(
+                    sum(
+                        matrix_l[row_index][index] ** 2 for index in range(column_index)
+                    )
+                )
+                matrix_l[row_index][column_index] = Decimal(
+                    sqrt(matrix_a[row_index][row_index] - local_sum)
+                )
+            else:
+                local_sum = Decimal(
+                    sum(
+                        matrix_l[row_index][index] * matrix_l[column_index][index]
+                        for index in range(column_index)
+                    )
+                )
+
+                matrix_l[row_index][column_index] = Decimal(
+                    (matrix_a[row_index][column_index] - local_sum)
+                    / matrix_l[column_index][column_index]
+                )
+
+    return matrix_l
+
+
+def forward_substitution(matrix_l: matrix, vector_b: vector) -> vector:
+    rows_number: int = len(matrix_l)
+    vector_y: vector = [Decimal(0) for _ in range(rows_number)]
+
+    for row_index in range(rows_number):
+        row_sum: Decimal = Decimal(
+            sum(
+                matrix_l[row_index][index] * vector_y[index]
+                for index in range(row_index)
+            )
+        )
+        vector_y[row_index] = (vector_b[row_index] - row_sum) / matrix_l[row_index][
+            row_index
+        ]
+
+    return vector_y
+
+
+def backward_substitution(matrix_l_transpose: matrix, vector_y: vector) -> vector:
+    rows_number: int = len(matrix_l_transpose)
+    vector_x: vector = [Decimal(0) for _ in range(rows_number)]
+
+    for row_index in range(rows_number - 1, -1, -1):
+        diagonal_element: Decimal = matrix_l_transpose[row_index][row_index]
+        temp_sum: Decimal = Decimal(
+            sum(
+                matrix_l_transpose[row_index][column_index] * vector_x[column_index]
+                for column_index in range(row_index + 1, rows_number)
+            )
+        )
+        vector_x[row_index] = (vector_y[row_index] - temp_sum) / diagonal_element
+
+    return vector_x
+
+
+def cholesky_method(matrix_a: matrix, vector_b: vector) -> None:
+    matrix_l = cholesky_decomposition(matrix_a)
+    vector_y = forward_substitution(matrix_l, vector_b)
+    vector_x = backward_substitution(transpose(matrix_l), vector_y)
+
+    print_result(0, vector_x)
+
+
+def jacobi_method(
+        matrix_a: matrix, vector_b: vector, approximation_error: Decimal
+) -> None:
+    count: int = len(vector_b)
+    iteration_count: int = 0
+
+    matrix_q: matrix = [[Decimal(0) for _ in range(count)] for _ in range(count)]
+    matrix_q_abs: vector = [Decimal(0) for _ in range(count ** 2)]
+
+    for row_index in range(count):
+        for column_index in range(count):
+            if row_index == column_index:
+                matrix_q[row_index][column_index] = Decimal(0)
 
             else:
+                matrix_q[row_index][column_index] = (
+                        -matrix_a[row_index][column_index] / matrix_a[row_index][row_index]
+                )
 
-                for k in range(j):
-                    local_sum += (matrix_l[i][k] * matrix_l[j][k])
+            matrix_q_abs.append(abs(matrix_q[row_index][column_index]))
 
-                if (matrix_l[j][j] > 0):
-                    matrix_l[i][j] = (local_matrix[i][j] - local_sum) / matrix_l[j][j]
+    q_value: Decimal = max(matrix_q_abs)
 
-    y = []
+    vector_c: vector = [
+        vector_b[index] / matrix_a[index][index] for index in range(count)
+    ]
 
-    for i in range(len(local_matrix)):
-        y.append(vector_b[i] / matrix_l[i][i])
-
-    x = []
-
-    for i in range(len(local_matrix)):
-        x.append(y[i] / matrix_l[i][i])
-
-    for i in range(len(x)):
-        print(f"x{i + 1} = {x[i]}")
-    print("\n", end="")
-
-
-def jacobi_method(local_matrix: matrix, local_vector: vector, approximation_error: float):
-    count: int = len(local_matrix)
-    iteration_count: int = 0
-
-    matrix_q: matrix = [[0] * count] * count
-    matrix_q_abs: vector = [0] * count ** 2
-
-    for first_index in range(count):
-        for second_index in range(count):
-            if first_index != second_index:
-                matrix_q[first_index][second_index] = - local_matrix[first_index][second_index] / \
-                                                      local_matrix[first_index][first_index]
-
-            matrix_q_abs.append(abs(matrix_q[first_index][second_index]))
-
-    q_value: float = max(matrix_q_abs)
-
-    vector_c: vector = [local_vector[index] / local_matrix[index][index] for index in range(count)]
-
-    initial_vector_x: vector = vector_c
-    current_vector_x: vector = initial_vector_x.copy()
+    vector_x_0: vector = vector_c.copy()
+    vector_x_k: vector = vector_x_0.copy()
 
     condition: bool = True
 
-    while (condition):
+    while condition:
         iteration_count += 1
-        current_vector_x = initial_vector_x.copy()
 
-        for index in range(count):
-            for second_index in range(count):
-                current_vector_x[index] = current_vector_x[index] + matrix_q[first_index][second_index] * \
-                                          initial_vector_x[second_index]
+        for row_index in range(count):
+            vector_x_k[row_index] = vector_x_0[row_index]
 
-        condition = get_condition_value(current_vector_x, initial_vector_x, q_value, approximation_error)
-        initial_vector_x = current_vector_x.copy()
+            for column_index in range(count):
+                vector_x_k[row_index] = (
+                        matrix_q[row_index][column_index] * vector_x_0[column_index]
+                        + vector_c[row_index]
+                )
 
-    print_result(iteration_count, current_vector_x)
+        condition = get_condition_value(
+            vector_x_k, vector_x_0, q_value, approximation_error
+        )
+        vector_x_0 = vector_x_k.copy()
+
+    print_result(iteration_count, vector_x_k)
 
 
-def gauss_seidel_method(local_matrix: matrix, local_vector: vector, approximation_error: float):
-    count: int = len(local_matrix)
+def gauss_seidel_method(
+        matrix_a: matrix, vector_b: vector, approximation_error: Decimal
+) -> None:
+    count: int = len(vector_b)
     iteration_count: int = 0
 
-    matrix_q: matrix = [[0] * count] * count
-    matrix_q_abs: vector = [0] * count ** 2
+    matrix_q: matrix = [[Decimal(0) for _ in range(count)] for _ in range(count)]
+    matrix_q_abs: vector = [Decimal(0) for _ in range(count ** 2)]
 
-    for first_index in range(count):
-        for second_index in range(count):
-            if first_index != second_index:
-                matrix_q[first_index][second_index] = - local_matrix[first_index][second_index] / \
-                                                      local_matrix[first_index][first_index]
+    for row_index in range(count):
+        for column_index in range(count):
+            if row_index == column_index:
+                matrix_q[row_index][column_index] = Decimal(0)
 
-            matrix_q_abs.append(abs(matrix_q[first_index][second_index]))
+            else:
+                matrix_q[row_index][column_index] = (
+                        -matrix_a[row_index][column_index] / matrix_a[row_index][row_index]
+                )
 
-    q_value: float = max(matrix_q_abs)
+            matrix_q_abs.append(abs(matrix_q[row_index][column_index]))
 
-    vector_c: vector = [local_vector[index] / local_matrix[index][index] for index in range(count)]
+    q_value: Decimal = max(matrix_q_abs)
 
-    initial_vector_x: vector = vector_c
-    current_vector_x: vector = initial_vector_x.copy()
+    vector_c: vector = [
+        vector_b[index] / matrix_a[index][index] for index in range(count)
+    ]
+
+    vector_x_0: vector = vector_c.copy()
+    vector_x_k: vector = vector_x_0.copy()
 
     condition: bool = True
 
-    while (condition):
+    while condition:
         iteration_count += 1
-        current_vector_x = initial_vector_x.copy()
 
-        for index in range(count):
-            for second_index in range(count):
+        for row_index in range(count):
+            vector_x_k[row_index] = vector_x_0[row_index]
 
-                if second_index >= first_index:
-                    current_vector_x[index] = current_vector_x[index] + matrix_q[first_index][second_index] * \
-                                              initial_vector_x[second_index]
+            for column_index in range(count):
+                if column_index >= row_index:
+                    vector_x_k[row_index] = (
+                            matrix_q[row_index][column_index] * vector_x_0[column_index]
+                            + vector_c[row_index]
+                    )
                 else:
-                    current_vector_x[index] = current_vector_x[index] + matrix_q[first_index][second_index] * \
-                                              current_vector_x[second_index]
+                    vector_x_k[row_index] = (
+                            matrix_q[row_index][column_index] * vector_x_k[column_index]
+                            + vector_c[row_index]
+                    )
 
-        condition = get_condition_value(current_vector_x, initial_vector_x, q_value, approximation_error)
-        initial_vector_x = current_vector_x.copy()
+        condition = get_condition_value(
+            vector_x_k, vector_x_0, q_value, approximation_error
+        )
+        vector_x_0 = vector_x_k.copy()
 
-    print_result(iteration_count, current_vector_x)
+    print_result(iteration_count, vector_x_k)
 
 
-approximation_error: float = 0.001
+matrix_a: matrix = [
+    [Decimal(11.2), Decimal(1.5), Decimal(-1.3), Decimal(0.2)],
+    [Decimal(1.5), Decimal(12.1), Decimal(-0.9), Decimal(0.4)],
+    [Decimal(-1.3), Decimal(-0.9), Decimal(11.7), Decimal(1.2)],
+    [Decimal(0.2), Decimal(0.4), Decimal(1.2), Decimal(13.2)],
+]
 
-matrix_a: matrix = [[6.1, -1.9, 0.4, 0.2], [-1.9, 14.3, 1.8, 1.4], [0.4, 1.8, 12.7, -0.6], [0.2, 1.4, -0.6, 13.1]]
-vector_b: vector = [7.1, 10.2, -7.2, 8.6]
-matrix_ab: matrix = [[6.1, -1.9, 0.4, 0.2, 7.1], [-1.9, 14.3, 1.8, 1.4, 10.2], [0.4, 1.8, 12.7, -0.6, -7.2],
-                     [0.2, 1.4, -0.6, 13.1, 8.6]]
+vector_b: vector = [Decimal(-11.4), Decimal(9.7), Decimal(8.3), Decimal(1.2)]
 
-# print("Metoda eliminării lui Gauss: ")
-# print("Metoda lui Cholesky: ")
-print(f"Metoda iterativă a lui Jacobi cu eroarea {approximation_error}: ")
-jacobi_method(matrix_a, vector_b, approximation_error)
+matrix_ab: matrix = [
+    [Decimal(11.2), Decimal(1.5), Decimal(-1.3), Decimal(0.2), Decimal(-11.4)],
+    [Decimal(1.5), Decimal(12.1), Decimal(-0.9), Decimal(0.4), Decimal(9.7)],
+    [Decimal(-1.3), Decimal(-0.9), Decimal(11.7), Decimal(1.2), Decimal(8.3)],
+    [Decimal(0.2), Decimal(0.4), Decimal(1.2), Decimal(13.2), Decimal(1.2)],
+]
 
-print(f"Metoda iterativă a lui Gauss-Seidel cu eroarea {approximation_error}: ")
-gauss_seidel_method(matrix_a, vector_b, approximation_error)
+approximation_error_1: Decimal = Decimal(0.001)
+approximation_error_2: Decimal = Decimal(0.00001)
 
-#
+print(f"\nMetoda eliminarii lui Gauss: ")
+gauss_method(matrix_ab)
+
+print(f"\nMetoda Cholesky: ")
+cholesky_method(matrix_a, vector_b)
+
+print(f"\nMetoda iterativă a lui Jacobi cu eroarea {round(approximation_error_1, 3)}: ")
+jacobi_method(matrix_a, vector_b, approximation_error_1)
+
+print(
+    f"\nMetoda iterativă a lui Gauss-Seidel cu eroarea {round(approximation_error_1, 3)}: "
+)
+gauss_seidel_method(matrix_a, vector_b, approximation_error_1)
+
+print(
+    f"\nMetoda iterativă a lui Gauss-Seidel cu eroarea {round(approximation_error_2, 5)}: "
+)
+gauss_seidel_method(matrix_a, vector_b, approximation_error_2)
