@@ -1,5 +1,4 @@
 from math import sqrt
-import decimal
 from decimal import Decimal
 
 matrix = list[list[Decimal]]
@@ -7,7 +6,7 @@ vector = list[Decimal]
 
 
 def get_condition_value(
-        vector_1: vector, vector_0: vector, q_value: Decimal, approximation_error: Decimal
+    vector_1: vector, vector_0: vector, q_value: Decimal, approximation_error: Decimal
 ) -> bool:
     count: int = len(vector_1)
     current_vector: vector = [
@@ -21,15 +20,24 @@ def get_condition_value(
 
 def print_result(iteration_count: int, result_vector: vector) -> None:
     count: int = len(result_vector)
+
     if iteration_count:
-        print(f"Numarul de iteratii: {iteration_count}")
+        print(f"Iteratia: {iteration_count}")
 
     for index in range(count):
         print(f"x{index + 1} = {result_vector[index]}")
 
 
+def print_residual_vector(residual_vector: vector) -> None:
+    count: int = len(residual_vector)
+
+    print("Vectorul rezidual este:")
+    for index in range(count):
+        print(f"w{index + 1} = {residual_vector[index]}")
+
+
 def find_max_pivot(
-        extended_matrix: matrix, column_index: int, count: int
+    extended_matrix: matrix, column_index: int, count: int
 ) -> tuple[Decimal, int]:
     max_pivot_value: Decimal = abs(extended_matrix[column_index][column_index])
     pivot_row: int = column_index
@@ -49,38 +57,25 @@ def normalize_row(row: list[Decimal], divisor: Decimal) -> list[Decimal]:
 
 
 def eliminate_element(
-        target_row: list[Decimal], source_row: list[Decimal], factor: Decimal
+    target_row: list[Decimal], source_row: list[Decimal], factor: Decimal
 ) -> list[Decimal]:
     return [target - factor * source for target, source in zip(target_row, source_row)]
 
 
-def gauss_method(extended_matrix: matrix) -> None:
-    rows_count: int = len(extended_matrix)
-    columns_count: int = rows_count + 1
+def calculate_residual_vector(
+    matrix_a: matrix, vector_b: vector, solutions: vector
+) -> vector:
+    residual_vector = [Decimal(0) for _ in range(len(solutions))]
 
-    local_matrix = [row.copy() for row in extended_matrix]
-
-    for row_index in range(rows_count):
-        divisor: Decimal = Decimal(local_matrix[row_index][row_index])
-        local_matrix[row_index] = normalize_row(local_matrix[row_index], divisor)
-
-        for column_index in range(row_index + 1, rows_count):
-            factor = local_matrix[column_index][row_index]
-            local_matrix[column_index] = eliminate_element(
-                local_matrix[column_index], local_matrix[row_index], factor
+    for row_index in range(len(matrix_a)):
+        for column_index in range(len(matrix_a)):
+            residual_vector[row_index] += (
+                matrix_a[row_index][column_index] * solutions[column_index]
             )
 
-    solutions = [extended_matrix[index][rows_count] for index in range(rows_count)]
+        residual_vector[row_index] -= vector_b[row_index]
 
-    for row_index in range(rows_count - 1, -1, -1):
-        solutions[row_index] = local_matrix[row_index][columns_count - 1]
-
-        for column_index in range(row_index + 1, rows_count):
-            solutions[row_index] -= (
-                    local_matrix[row_index][column_index] * solutions[column_index]
-            )
-
-    print_result(0, solutions)
+    return residual_vector
 
 
 def transpose(matrix_l: matrix) -> matrix:
@@ -162,22 +157,57 @@ def backward_substitution(matrix_l_transpose: matrix, vector_y: vector) -> vecto
     return vector_x
 
 
+def gauss_method(extended_matrix: matrix, vector_b: vector) -> None:
+    rows_count: int = len(extended_matrix)
+    columns_count: int = rows_count + 1
+
+    local_matrix = [row.copy() for row in extended_matrix]
+
+    for row_index in range(rows_count):
+        divisor: Decimal = Decimal(local_matrix[row_index][row_index])
+        local_matrix[row_index] = normalize_row(local_matrix[row_index], divisor)
+
+        for column_index in range(row_index + 1, rows_count):
+            factor = local_matrix[column_index][row_index]
+            local_matrix[column_index] = eliminate_element(
+                local_matrix[column_index], local_matrix[row_index], factor
+            )
+
+    solutions = [extended_matrix[index][rows_count] for index in range(rows_count)]
+
+    for row_index in range(rows_count - 1, -1, -1):
+        solutions[row_index] = local_matrix[row_index][columns_count - 1]
+
+        for column_index in range(row_index + 1, rows_count):
+            solutions[row_index] -= (
+                local_matrix[row_index][column_index] * solutions[column_index]
+            )
+
+    residual_vector: vector = calculate_residual_vector(matrix_a, vector_b, solutions)
+
+    print_result(0, solutions)
+
+    print_residual_vector(residual_vector)
+
+
 def cholesky_method(matrix_a: matrix, vector_b: vector) -> None:
     matrix_l = cholesky_decomposition(matrix_a)
     vector_y = forward_substitution(matrix_l, vector_b)
     vector_x = backward_substitution(transpose(matrix_l), vector_y)
 
     print_result(0, vector_x)
+    residual_vector: vector = calculate_residual_vector(matrix_a, vector_b, vector_x)
+    print_residual_vector(residual_vector)
 
 
 def jacobi_method(
-        matrix_a: matrix, vector_b: vector, approximation_error: Decimal
+    matrix_a: matrix, vector_b: vector, approximation_error: Decimal
 ) -> None:
     count: int = len(vector_b)
     iteration_count: int = 0
 
     matrix_q: matrix = [[Decimal(0) for _ in range(count)] for _ in range(count)]
-    matrix_q_abs: vector = [Decimal(0) for _ in range(count ** 2)]
+    matrix_q_abs: vector = [Decimal(0) for _ in range(count**2)]
 
     for row_index in range(count):
         for column_index in range(count):
@@ -186,12 +216,18 @@ def jacobi_method(
 
             else:
                 matrix_q[row_index][column_index] = (
-                        -matrix_a[row_index][column_index] / matrix_a[row_index][row_index]
+                    -matrix_a[row_index][column_index] / matrix_a[row_index][row_index]
                 )
 
             matrix_q_abs.append(abs(matrix_q[row_index][column_index]))
 
     q_value: Decimal = max(matrix_q_abs)
+
+    if q_value < 1:
+        print(f"Conditia de convergenta se respecta, q fiind {round(q_value, 5)}.")
+    else:
+        print(f"Conditia de convergenta nu se respecta, q fiind {round(q_value, 5)}.")
+        return
 
     vector_c: vector = [
         vector_b[index] / matrix_a[index][index] for index in range(count)
@@ -204,14 +240,15 @@ def jacobi_method(
 
     while condition:
         iteration_count += 1
+        print_result(iteration_count, vector_x_k)
 
         for row_index in range(count):
             vector_x_k[row_index] = vector_x_0[row_index]
 
             for column_index in range(count):
                 vector_x_k[row_index] = (
-                        matrix_q[row_index][column_index] * vector_x_0[column_index]
-                        + vector_c[row_index]
+                    matrix_q[row_index][column_index] * vector_x_0[column_index]
+                    + vector_c[row_index]
                 )
 
         condition = get_condition_value(
@@ -219,17 +256,18 @@ def jacobi_method(
         )
         vector_x_0 = vector_x_k.copy()
 
-    print_result(iteration_count, vector_x_k)
+    residual_vector: vector = calculate_residual_vector(matrix_a, vector_b, vector_x_k)
+    print_residual_vector(residual_vector)
 
 
 def gauss_seidel_method(
-        matrix_a: matrix, vector_b: vector, approximation_error: Decimal
+    matrix_a: matrix, vector_b: vector, approximation_error: Decimal
 ) -> None:
     count: int = len(vector_b)
     iteration_count: int = 0
 
     matrix_q: matrix = [[Decimal(0) for _ in range(count)] for _ in range(count)]
-    matrix_q_abs: vector = [Decimal(0) for _ in range(count ** 2)]
+    matrix_q_abs: vector = [Decimal(0) for _ in range(count**2)]
 
     for row_index in range(count):
         for column_index in range(count):
@@ -238,12 +276,18 @@ def gauss_seidel_method(
 
             else:
                 matrix_q[row_index][column_index] = (
-                        -matrix_a[row_index][column_index] / matrix_a[row_index][row_index]
+                    -matrix_a[row_index][column_index] / matrix_a[row_index][row_index]
                 )
 
             matrix_q_abs.append(abs(matrix_q[row_index][column_index]))
 
     q_value: Decimal = max(matrix_q_abs)
+
+    if q_value < 1:
+        print(f"Conditia de convergenta se respecta, q fiind {round(q_value, 5)}.")
+    else:
+        print(f"Conditia de convergenta nu se respecta, q fiind {round(q_value, 5)}.")
+        return
 
     vector_c: vector = [
         vector_b[index] / matrix_a[index][index] for index in range(count)
@@ -256,6 +300,7 @@ def gauss_seidel_method(
 
     while condition:
         iteration_count += 1
+        print_result(iteration_count, vector_x_k)
 
         for row_index in range(count):
             vector_x_k[row_index] = vector_x_0[row_index]
@@ -263,13 +308,13 @@ def gauss_seidel_method(
             for column_index in range(count):
                 if column_index >= row_index:
                     vector_x_k[row_index] = (
-                            matrix_q[row_index][column_index] * vector_x_0[column_index]
-                            + vector_c[row_index]
+                        matrix_q[row_index][column_index] * vector_x_0[column_index]
+                        + vector_c[row_index]
                     )
                 else:
                     vector_x_k[row_index] = (
-                            matrix_q[row_index][column_index] * vector_x_k[column_index]
-                            + vector_c[row_index]
+                        matrix_q[row_index][column_index] * vector_x_k[column_index]
+                        + vector_c[row_index]
                     )
 
         condition = get_condition_value(
@@ -277,7 +322,8 @@ def gauss_seidel_method(
         )
         vector_x_0 = vector_x_k.copy()
 
-    print_result(iteration_count, vector_x_k)
+    residual_vector: vector = calculate_residual_vector(matrix_a, vector_b, vector_x_k)
+    print_residual_vector(residual_vector)
 
 
 matrix_a: matrix = [
@@ -296,24 +342,18 @@ matrix_ab: matrix = [
     [Decimal(0.2), Decimal(0.4), Decimal(1.2), Decimal(13.2), Decimal(1.2)],
 ]
 
-approximation_error_1: Decimal = Decimal(0.001)
-approximation_error_2: Decimal = Decimal(0.00001)
+approximation_error: Decimal = Decimal(0.000001)
 
-print(f"\nMetoda eliminarii lui Gauss: ")
-gauss_method(matrix_ab)
+print(f"\n\tMetoda eliminarii lui Gauss: ")
+gauss_method(matrix_ab, vector_b)
 
-print(f"\nMetoda Cholesky: ")
+print(f"\n\tMetoda Cholesky: ")
 cholesky_method(matrix_a, vector_b)
 
-print(f"\nMetoda iterativă a lui Jacobi cu eroarea {round(approximation_error_1, 3)}: ")
-jacobi_method(matrix_a, vector_b, approximation_error_1)
+print(f"\n\tMetoda iterativă a lui Jacobi cu eroarea {round(approximation_error, 6)}: ")
+jacobi_method(matrix_a, vector_b, approximation_error)
 
 print(
-    f"\nMetoda iterativă a lui Gauss-Seidel cu eroarea {round(approximation_error_1, 3)}: "
+    f"\n\tMetoda iterativă a lui Gauss-Seidel cu eroarea {round(approximation_error, 6)}: "
 )
-gauss_seidel_method(matrix_a, vector_b, approximation_error_1)
-
-print(
-    f"\nMetoda iterativă a lui Gauss-Seidel cu eroarea {round(approximation_error_2, 5)}: "
-)
-gauss_seidel_method(matrix_a, vector_b, approximation_error_2)
+gauss_seidel_method(matrix_a, vector_b, approximation_error)
