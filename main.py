@@ -68,6 +68,7 @@ def calculate_residual_vector(
     residual_vector = [Decimal(0) for _ in range(len(solutions))]
 
     for row_index in range(count):
+        residual_vector[row_index] = Decimal(0)
         for column_index in range(count):
             residual_vector[row_index] += (
                     matrix_a[row_index][column_index] * solutions[column_index]
@@ -346,11 +347,11 @@ matrix_ab: matrix = [
 
 approximation_error: Decimal = Decimal(0.000001)
 
-# print(f"\n\tMetoda eliminarii lui Gauss: ")
-# gauss_method(matrix_ab, vector_b)
-#
-# print(f"\n\tMetoda Cholesky: ")
-# cholesky_method(matrix_a, vector_b)
+print(f"\n\tMetoda eliminarii lui Gauss: ")
+gauss_method(matrix_ab, vector_b)
+
+print(f"\n\tMetoda Cholesky: ")
+cholesky_method(matrix_a, vector_b)
 
 print(f"\n\tMetoda iterativă a lui Jacobi cu eroarea {round(approximation_error, 6)}: ")
 jacobi_method(matrix_a, vector_b, approximation_error)
