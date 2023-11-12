@@ -233,7 +233,7 @@ def jacobi_method(
         vector_b[index] / matrix_a[index][index] for index in range(count)
     ]
 
-    vector_x_0: vector = vector_c.copy()
+    vector_x_0: vector = [Decimal(0) for _ in range(count)]
     vector_x_k: vector = vector_x_0.copy()
 
     condition_value: Decimal = Decimal(0.0007)
@@ -242,13 +242,16 @@ def jacobi_method(
         iteration_count += 1
 
         for row_index in range(count):
+            local_sum = Decimal(0)
+
             for column_index in range(count):
 
-                if matrix_q[row_index][column_index]:
-                    vector_x_k[row_index] = (
-                            matrix_q[row_index][column_index] * vector_x_0[column_index]
-                            + vector_c[row_index]
+                if column_index != row_index:
+                    local_sum += (
+                            matrix_a[row_index][column_index] * vector_x_0[column_index]
                     )
+
+                vector_x_k[row_index] = (vector_b[row_index] - local_sum) / matrix_a[row_index][row_index]
 
         condition_value = get_condition_value(
             vector_x_k, vector_x_0, q_value
@@ -294,29 +297,26 @@ def gauss_seidel_method(
         vector_b[index] / matrix_a[index][index] for index in range(count)
     ]
 
-    vector_x_0: vector = vector_c.copy()
+    vector_x_0: vector = [Decimal(0) for _ in range(count)]
     vector_x_k: vector = vector_x_0.copy()
 
     condition_value: Decimal = Decimal(0.00001)
+    local_sum: Decimal = Decimal(0)
 
-    while condition_value > approximation_error:
+    while condition_value >= approximation_error:
         iteration_count += 1
 
         for row_index in range(count):
-            vector_x_k[row_index] = vector_x_0[row_index]
+            local_sum = Decimal(0)
 
             for column_index in range(count):
-                if matrix_q[row_index][column_index]:
-                    if column_index >= row_index:
-                        vector_x_k[row_index] = (
-                                matrix_q[row_index][column_index] * vector_x_0[column_index]
-                                + vector_c[row_index]
-                        )
-                    else:
-                        vector_x_k[row_index] = (
-                                matrix_q[row_index][column_index] * vector_x_k[column_index]
-                                + vector_c[row_index]
-                        )
+
+                if column_index != row_index:
+                    local_sum += (
+                            matrix_a[row_index][column_index] * vector_x_0[column_index]
+                    )
+
+            vector_x_k[row_index] = (vector_b[row_index] - local_sum) / matrix_a[row_index][row_index]
 
         condition_value = get_condition_value(
             vector_x_k, vector_x_0, q_value
@@ -347,16 +347,15 @@ matrix_ab: matrix = [
 
 approximation_error: Decimal = Decimal(0.000001)
 
-print(f"\n\tMetoda eliminarii lui Gauss: ")
-gauss_method(matrix_ab, vector_b)
+# print(f"\n\tMetoda Cholesky: ")
+# cholesky_method(matrix_a, vector_b)
 
-print(f"\n\tMetoda Cholesky: ")
-cholesky_method(matrix_a, vector_b)
-
-print(f"\n\tMetoda iterativă a lui Jacobi cu eroarea {round(approximation_error, 6)}: ")
-jacobi_method(matrix_a, vector_b, approximation_error)
-
+# print(f"\n\tMetoda iterativă a lui Jacobi cu eroarea {round(approximation_error, 6)}: ")
+# jacobi_method(matrix_a, vector_b, approximation_error)
+#
 print(
     f"\n\tMetoda iterativă a lui Gauss-Seidel cu eroarea {round(approximation_error, 6)}: "
 )
 gauss_seidel_method(matrix_a, vector_b, approximation_error)
+print(f"\n\tMetoda eliminarii lui Gauss: ")
+gauss_method(matrix_ab, vector_b)
