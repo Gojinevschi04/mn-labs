@@ -1,90 +1,115 @@
-from math import sqrt
 from decimal import Decimal
 
-matrix = list[list[Decimal]]
-vector = list[Decimal]
-
-import sympy as sym
-import matplotlib.pyplot as plt
-import csv
-
-eps = 10 ** -4
+decimal_list = list[Decimal]
 
 
-def print_function(f):
-    print("Polinomul lagrange:")
-    # print(str(f).replace('**','^'))
-    print(f"L{sym.degree(f)} = {str(f).replace('**', '^')}")
+def has_unique_values(input_list: decimal_list) -> bool:
+    return len(set(input_list)) == len(input_list)
 
 
-def lagrange(x, y):
-    v = sym.Symbol('x')
-    lagrange = 0
-    for i in range(len(x)):
-        Ln = y[i]
-        for j in range(len(x)):
-            if j == i:
-                continue
-            Ln *= (v - x[j]) / (x[i] - x[j])
-        lagrange += Ln
-    lagrange = sym.simplify(lagrange).evalf()
-    return lagrange
+def print_values(x_values: decimal_list, y_values: decimal_list) -> None:
+    print("\nInput values are:\n")
+    print("X", end="\t")
+
+    for x in x_values:
+        print(f"{x:.6f}", end="\t")
+    print("\nY", end="\t")
+
+    for y in y_values:
+        print(f"{y:.6f}", end="\t")
+    print()
 
 
-def L_n(x0, x1, y0, y1):
-    return (y0 * x1 - y1 * x0) / (x1 - x0)
+def print_lagrange_interpolation_polynomial(intermediate_values: decimal_list):
+    degree = len(intermediate_values) - 1
+    print("\n1) Lagrange Interpolation Polynomial Ln is:")
+    print(f"Ln(x) = {intermediate_values[degree]:.6f}X^{degree}", end=" ")
+
+    current_degree = degree - 1
+
+    for k in range(degree - 1, 0, -1):
+        print(f"+{intermediate_values[k]:.6f}X^{current_degree}", end=" ")
+
+        if k == degree - 4:
+            print("\n\t", end="")
+        current_degree -= 1
+
+    print(f"+{intermediate_values[0]:.6f}")
 
 
-def aitken(a, x, y):
-    headers = ["Xi", "Yi", "Xi - a"]
-    tabel = []
-    for i in range(len(x)):
-        line = [x[i], y[i], round(x[i] - a, 5)]
-        title = "L_"
+def calculate_coefficients(x_data: decimal_list) -> decimal_list:
+    degree = len(x_data)
+    coefficients = [Decimal('0.0') for _ in range(degree)]
+    coefficients[0] = Decimal('1')
+
+    for i in range(degree - 1):
+        coefficients[i + 1] = coefficients[i]
+
         for j in range(i, 0, -1):
-            if i == 0:
-                continue
-            title += f'i-{j}_'
-            line.append(0)
-        if i != 0:
-            headers.append(title + 'i')
-        tabel.append(line)
+            coefficients[j] = coefficients[j - 1] - coefficients[j] * x_data[i]
+        coefficients[0] = -coefficients[0] * x_data[i]
 
-    val = 0
-    error = 0
-    for i in range(len(tabel)):
-        for j in range(1, len(tabel[i])):
-            try:
-                x0, x1, y0, y1 = tabel[i - j + 2][2], tabel[i][2], tabel[i - 1][j - 2], tabel[i][j - 2]
-            except:
-                pass
-            if j > 3:
-                y0 = tabel[i - 1][j - 1]
-                y1 = tabel[i][j - 1]
-            if tabel[i][j] == 0:
-                val = L_n(x0, x1, y0, y1)
-                tabel[i][j] = round(val, 4)
-
-            error = abs(tabel[i][j] - tabel[i - 1][j - 1])
-            if error < eps:
-                break
-
-    print('\n'.join(
-        ['|'.join(['{:10}'.format(item) for item in row]).replace("_", ",") + "|" for row in [headers] + tabel]))
-    export([headers] + tabel)
-    print("error:", error)
-    print(f'f({a})≈L({a})= {val}')
-    return val
+    return coefficients
 
 
-var = 7
-a = 0.204
-x = [0.104, 0.205, 0.310, 0.401, 0.507, 0.618, 0.721]
-y = [4.96713, 6.811347, 8.76712, 10.16147, 9.12347, 7.26493, 5.37149]
+def calculate_intermediate_values(x_data: decimal_list, y_data: decimal_list,
+                                  coefficients: decimal_list) -> decimal_list:
+    degree = len(x_data)
+    intermediate_values = [Decimal('0.0') for _ in range(degree + 1)]
+    temp_values = [Decimal('0.0') for _ in range(degree + 1)]
 
-f = lagrange(x, y)
-print(f"L{sym.degree(f)}({a}) = {f.subs('x', a)}")
-# print("pentru a =",a,"Ln(",a,")=",f.subs('x', a),sym.degree(f))
-print_function(f)
+    for i in range(degree):
+        product = Decimal('1')
+        for j in range(degree):
+            if i != j:
+                product *= (x_data[i] - x_data[j])
 
-aitken(a, x, y)
+        for k in range(degree, -1, -1):
+            if k == 0:
+                temp_values[k] = Decimal('0.0')
+            else:
+                temp_values[k] = coefficients[k - 1] + x_data[i] * temp_values[k - 1]
+
+        for k in range(degree + 1):
+            intermediate_values[k] += y_data[i] * temp_values[k] / product
+
+    return intermediate_values
+
+
+def lagrange_interpolation(x_data: decimal_list, y_data: decimal_list, target_x: Decimal) -> Decimal:
+    coefficients = calculate_coefficients(x_data)
+    intermediate_values = calculate_intermediate_values(x_data, y_data, coefficients)
+
+    degree = len(x_data) - 1
+    interpolated_value = intermediate_values[degree]
+
+    for i in range(1, degree + 1):
+        interpolated_value = target_x * interpolated_value + intermediate_values[degree - i]
+
+    return interpolated_value
+
+
+x_values = [Decimal('-1.432'), Decimal('-0.675'), Decimal('1.439'), Decimal('2.567'), Decimal('3.486'),
+            Decimal('4.910'),
+            Decimal('5.763')]
+y_values = [Decimal('7.67103'), Decimal('5.45321'), Decimal('3.76129'), Decimal('0.56741'), Decimal('-1.5630'),
+            Decimal('0.7684'),
+            Decimal('2.56793')]
+
+target_x_value: Decimal = Decimal(-0.532)
+
+data_length = len(x_values)
+
+result = lagrange_interpolation(x_values, y_values, target_x_value)
+
+print_lagrange_interpolation_polynomial(
+    calculate_intermediate_values(x_values, y_values, calculate_coefficients(x_values)))
+
+print(
+    f"\n2 The value of the function f(x) at x = {target_x_value:.3f} using the Lagrange interpolation polynomial is: f(x) = {result:.6f}")
+
+print("\nCase where m < n:")
+new_length = data_length - 3
+reduced_x_values, reduced_y_values = x_values[:new_length], y_values[:new_length]
+print_values(reduced_x_values, reduced_y_values)
+lagrange_interpolation(reduced_x_values, reduced_y_values, target_x_value)
