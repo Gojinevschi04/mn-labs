@@ -106,7 +106,7 @@ print_lagrange_interpolation_polynomial(
     calculate_intermediate_values(x_values, y_values, calculate_coefficients(x_values)))
 
 print(
-    f"\n2 The value of the function f(x) at x = {target_x_value:.3f} using the Lagrange interpolation polynomial is: f(x) = {result:.6f}")
+    f"\n2) The value of the function f(x) at x = {target_x_value:.3f} using the Lagrange interpolation polynomial is: f(x) = {result:.6f}")
 
 print("\nCase where m < n:")
 new_length = data_length - 3
