@@ -74,12 +74,11 @@ def get_lagrange_polynomials_values(x_data_points: list[Decimal], y_function_val
 
         # if abs(current_approximation - previous_approximation) < epsilon:
         #     break
+        print(f"m = {initial_polynom_degree - value}, Ln{initial_polynom_degree - value} = {current_approximation}")
+        value -= 1
 
         print(f"Eroarea: {abs(current_approximation - previous_approximation)}")
         previous_approximation = current_approximation
-
-        print(f"m = {initial_polynom_degree - value}, Ln{initial_polynom_degree - value} = {current_approximation}")
-        value -= 1
 
     return current_approximation
 
@@ -105,11 +104,11 @@ interpolated_polynomial: sp.Expr = interpolate_lagrange(
 
 print_polynomial(interpolated_polynomial, polynomial_degree)
 
-# interpolated_polynomial_value: Decimal = interpolated_polynomial.subs('x', interpolation_point)
+interpolated_polynomial_value: Decimal = interpolated_polynomial.subs('x', interpolation_point)
 
-# print(
-#     f"L{polynomial_degree}({round(interpolation_point, 3)}) = {round(interpolated_polynomial_value, 15)}"
-# )
+print(
+    f"L{polynomial_degree}({round(interpolation_point, 3)}) = {round(interpolated_polynomial_value, 15)}"
+)
 
-# print("\n Pentru cazul in care m < n:")
-# get_lagrange_polynomials_values(x_data_points, y_function_values, interpolation_point)
+print("\n Pentru cazul in care m < n:")
+get_lagrange_polynomials_values(x_data_points, y_function_values, interpolation_point)
