@@ -91,7 +91,7 @@ def compute_interpolation_result(interpolation_table: list[decimal_list], data_p
 
 def print_interpolation_table(interpolation_table: list[decimal_list]) -> None:
     formatted_table_strings = [
-        '|'.join([f'{round(item, 6):10}' for item in row]) + '|' for row in interpolation_table
+        '|'.join([f'{round(item, 8):10}' for item in row]) + '|' for row in interpolation_table
     ]
 
     print('\n'.join(formatted_table_strings))
@@ -109,22 +109,16 @@ def aitken_interpolation(interpolation_point: Decimal, x_values: decimal_list, y
     print_interpolation_table(interpolation_table)
 
     print("\nError:", round(abs(interpolation_table[0][2] - interpolation_table[1][1]), 6))
-    print(f'\nf({round(interpolation_point, 5)}) ≈ L({round(interpolation_point, 5)}) = {round(result, 5)}')
+    print(f'\nf({round(interpolation_point, 5)}) ≈ L({round(interpolation_point, 7)}) = {round(result, 7)}')
 
     return result
 
 
-interpolation_point: Decimal = Decimal(-0.532)
+interpolation_point: Decimal = Decimal(0.205)
 
-x_data_points: decimal_list = [Decimal('-1.432'), Decimal('-0.675'), Decimal('1.439'), Decimal('2.567'),
-                               Decimal('3.486'),
-                               Decimal('4.910'),
-                               Decimal('5.763')]
+x_data_points: decimal_list = [Decimal('0.104'), Decimal('0.205'), Decimal('0.310'), Decimal('0.401'), Decimal('0.507'), Decimal('0.618'), Decimal('0.721')]
 
-y_function_values: decimal_list = [Decimal('7.67103'), Decimal('5.45321'), Decimal('3.76129'), Decimal('0.56741'),
-                                   Decimal('-1.5630'),
-                                   Decimal('0.7684'),
-                                   Decimal('2.56793')]
+y_function_values = [Decimal('4.96713'), Decimal('6.811347'), Decimal('8.76712'), Decimal('10.16147'), Decimal('9.12347'), Decimal('7.26493'), Decimal('5.37149')]
 
 polynomial_degree: int = len(x_data_points)
 

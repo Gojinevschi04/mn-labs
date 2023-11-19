@@ -89,15 +89,11 @@ def lagrange_interpolation(x_data: decimal_list, y_data: decimal_list, target_x:
     return interpolated_value
 
 
-x_values = [Decimal('-1.432'), Decimal('-0.675'), Decimal('1.439'), Decimal('2.567'), Decimal('3.486'),
-            Decimal('4.910'),
-            Decimal('5.763')]
+x_values = [Decimal('0.104'), Decimal('0.205'), Decimal('0.310'), Decimal('0.401'), Decimal('0.507'), Decimal('0.618'), Decimal('0.721')]
 
-y_values = [Decimal('7.67103'), Decimal('5.45321'), Decimal('3.76129'), Decimal('0.56741'), Decimal('-1.5630'),
-            Decimal('0.7684'),
-            Decimal('2.56793')]
+y_values = [Decimal('4.96713'), Decimal('6.811347'), Decimal('8.76712'), Decimal('10.16147'), Decimal('9.12347'), Decimal('7.26493'), Decimal('5.37149')]
 
-target_x_value: Decimal = Decimal(-0.532)
+target_x_value: Decimal = Decimal(0.205)
 
 data_length = len(x_values)
 
