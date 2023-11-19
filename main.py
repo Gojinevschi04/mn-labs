@@ -3,12 +3,19 @@ from decimal import Decimal
 from math import exp
 
 
+def print_result(results: list[Decimal]) -> None:
+    print(f"\nSolutia: {results[-1]}")
+
+    # for item in results:
+    #     print(round(item, 15))
+
+
 def differential_equation(x_value: Decimal, y_value: Decimal) -> Decimal:
     return Decimal(exp(Decimal(-1.2) * x_value)) * (x_value * x_value + Decimal(1.8))
 
 
 def euler_method(
-    y_initial: Decimal, start_x: Decimal, end_x: Decimal, step_size: Decimal
+        y_initial: Decimal, start_x: Decimal, end_x: Decimal, step_size: Decimal
 ) -> list[Decimal]:
     solution_values: list[Decimal] = [y_initial]
     current_x: Decimal = copy.copy(start_x)
@@ -23,7 +30,7 @@ def euler_method(
 
 
 def modified_euler_method(
-    y_initial: Decimal, start_x: Decimal, end_x: Decimal, step_size: Decimal
+        y_initial: Decimal, start_x: Decimal, end_x: Decimal, step_size: Decimal
 ) -> list[Decimal]:
     solution_values: list[Decimal] = [y_initial]
     current_x: Decimal = copy.copy(start_x)
@@ -43,7 +50,7 @@ def modified_euler_method(
 
 
 def runge_kutta_method(
-    y_initial: Decimal, start_x: Decimal, end_x: Decimal, step_size: Decimal
+        y_initial: Decimal, start_x: Decimal, end_x: Decimal, step_size: Decimal
 ) -> list[Decimal]:
     solution_values: list[Decimal] = [y_initial]
     current_x: Decimal = copy.copy(start_x)
@@ -67,3 +74,19 @@ def runge_kutta_method(
         current_x += step_size
 
     return solution_values
+
+
+start_value: Decimal = Decimal(0)
+end_value: Decimal = Decimal(1)
+
+initial_y: Decimal = Decimal(0)
+step_value: Decimal = Decimal(0.05)
+
+print("\nMetoda Euler:")
+print_result(euler_method(initial_y, start_value, end_value, step_value))
+
+print("\nMetoda Euler modificat:")
+print_result(modified_euler_method(initial_y, start_value, end_value, step_value))
+
+print("\nMetoda Runge – Kutta:")
+print_result(runge_kutta_method(initial_y, start_value, end_value, step_value))
