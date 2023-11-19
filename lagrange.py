@@ -114,7 +114,7 @@ def aitken_interpolation(interpolation_point: Decimal, x_values: decimal_list, y
     return result
 
 
-interpolation_point: Decimal = Decimal(0.204)
+interpolation_point: Decimal = Decimal(-0.532)
 
 x_data_points: decimal_list = [Decimal('-1.432'), Decimal('-0.675'), Decimal('1.439'), Decimal('2.567'),
                                Decimal('3.486'),

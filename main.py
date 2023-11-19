@@ -92,6 +92,7 @@ def lagrange_interpolation(x_data: decimal_list, y_data: decimal_list, target_x:
 x_values = [Decimal('-1.432'), Decimal('-0.675'), Decimal('1.439'), Decimal('2.567'), Decimal('3.486'),
             Decimal('4.910'),
             Decimal('5.763')]
+
 y_values = [Decimal('7.67103'), Decimal('5.45321'), Decimal('3.76129'), Decimal('0.56741'), Decimal('-1.5630'),
             Decimal('0.7684'),
             Decimal('2.56793')]
