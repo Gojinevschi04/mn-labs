@@ -12,7 +12,7 @@ def print_result(results: list[Decimal]) -> None:
         print(f"Rezultatul: {round(results[index], 15)}")
 
 
-def differential_equation(x_value: Decimal, y_value: Decimal) -> Decimal:
+def get_differential_expression_value(x_value: Decimal, y_value: Decimal) -> Decimal:
     return Decimal(x_value**2 + Decimal(0.2) * y_value**2)
 
 
@@ -24,7 +24,7 @@ def euler_method(
     current_y: Decimal = copy.copy(y_initial)
 
     while current_x < end_x:
-        current_y += step_size * differential_equation(current_x, current_y)
+        current_y += step_size * get_differential_expression_value(current_x, current_y)
         solution_values.append(current_y)
         current_x += step_size
 
@@ -39,8 +39,8 @@ def modified_euler_method(
     current_y: Decimal = copy.copy(y_initial)
 
     while current_x < end_x:
-        k1: Decimal = step_size * differential_equation(current_x, current_y)
-        k2: Decimal = step_size * differential_equation(
+        k1: Decimal = step_size * get_differential_expression_value(current_x, current_y)
+        k2: Decimal = step_size * get_differential_expression_value(
             current_x + (step_size / 2), current_y + (k1 / 2)
         )
 
@@ -59,14 +59,14 @@ def runge_kutta_method(
     current_y: Decimal = copy.copy(y_initial)
 
     while current_x < end_x:
-        k1: Decimal = step_size * differential_equation(current_x, current_y)
-        k2: Decimal = step_size * differential_equation(
+        k1: Decimal = step_size * get_differential_expression_value(current_x, current_y)
+        k2: Decimal = step_size * get_differential_expression_value(
             current_x + (step_size / 2), current_y + (k1 / 2)
         )
-        k3: Decimal = step_size * differential_equation(
+        k3: Decimal = step_size * get_differential_expression_value(
             current_x + (step_size / 2), current_y + (k2 / 2)
         )
-        k4: Decimal = step_size * differential_equation(
+        k4: Decimal = step_size * get_differential_expression_value(
             current_x + step_size, current_y + k3
         )
 
