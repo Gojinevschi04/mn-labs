@@ -107,7 +107,7 @@ print_polynomial(interpolated_polynomial, polynomial_degree)
 interpolated_polynomial_value: Decimal = interpolated_polynomial.subs('x', interpolation_point)
 
 print(
-    f"L{polynomial_degree}({round(interpolation_point, 3)}) = {round(interpolated_polynomial_value, 15)}"
+    f"\nL{polynomial_degree}({round(interpolation_point, 3)}) = {round(interpolated_polynomial_value, 15)}"
 )
 
 print("\n Pentru cazul in care m < n:")
