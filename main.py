@@ -4,10 +4,12 @@ from math import exp
 
 
 def print_result(results: list[Decimal]) -> None:
-    print(f"\nSolutia: {results[-1]}")
+    # print(f"Solutia: {results[-1]}")
+    count: int = len(results)
 
-    # for item in results:
-    #     print(round(item, 15))
+    for index in range(count):
+        print(f"Iteratia: {index}")
+        print(f"Rezultatul: {round(results[index], 15)}")
 
 
 def differential_equation(x_value: Decimal, y_value: Decimal) -> Decimal:
