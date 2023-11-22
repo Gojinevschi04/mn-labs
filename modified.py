@@ -13,7 +13,7 @@ def print_result(results: list[Decimal]) -> None:
 
 
 def differential_equation(x_value: Decimal, y_value: Decimal) -> Decimal:
-    return Decimal(exp(Decimal(-1.2) * x_value)) * (x_value * x_value + Decimal(1.8))
+    return Decimal(x_value**2 + Decimal(0.2) * y_value**2)
 
 
 def euler_method(
@@ -81,7 +81,7 @@ def runge_kutta_method(
 start_value: Decimal = Decimal(0)
 end_value: Decimal = Decimal(1)
 
-initial_y: Decimal = Decimal(0)
+initial_y: Decimal = Decimal(0.2)
 step_value: Decimal = Decimal(0.05)
 
 print("\nMetoda Euler:")
